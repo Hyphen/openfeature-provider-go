@@ -1,5 +1,7 @@
 package toggle
 
+import "time"
+
 type Config struct {
 	PublicKey        string
 	Application      string
@@ -10,8 +12,8 @@ type Config struct {
 }
 
 type CacheConfig struct {
-	TTLSeconds int
-	KeyGen     func(ctx EvaluationContext) string
+	TTL    time.Duration
+	KeyGen func(ctx EvaluationContext) string
 }
 
 type EvaluationContext struct {

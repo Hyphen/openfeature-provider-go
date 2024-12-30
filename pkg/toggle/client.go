@@ -3,15 +3,17 @@ package toggle
 import (
 	"bytes"
 	"encoding/json"
+	"github.com/patrickmn/go-cache"
 	"net/http"
 	"time"
 )
 
 type Client struct {
 	httpClient *http.Client
-	cache      *Cache
+	cache      *cache.Cache
 	config     Config
 	publicKey  string
+	keyGen     func(ctx EvaluationContext) string
 }
 
 func newClient(config Config) (*Client, error) {
@@ -24,7 +26,8 @@ func newClient(config Config) (*Client, error) {
 	}
 
 	if config.Cache != nil {
-		c.cache = newCache(config.Cache)
+		c.cache = cache.New(config.Cache.TTL, 10*time.Minute)
+		c.keyGen = config.Cache.KeyGen
 	}
 
 	return c, nil
@@ -32,8 +35,11 @@ func newClient(config Config) (*Client, error) {
 
 func (c *Client) Evaluate(ctx EvaluationContext) (*Response, error) {
 	if c.cache != nil {
-		if cached := c.cache.Get(ctx); cached != nil {
-			return cached.(*Response), nil
+		if c.keyGen != nil {
+			key := c.keyGen(ctx)
+			if cached, found := c.cache.Get(key); found {
+				return cached.(*Response), nil
+			}
 		}
 	}
 
@@ -61,8 +67,9 @@ func (c *Client) Evaluate(ctx EvaluationContext) (*Response, error) {
 		return nil, err
 	}
 
-	if c.cache != nil {
-		c.cache.Set(ctx, &result)
+	if c.cache != nil && c.keyGen != nil {
+		key := c.keyGen(ctx)
+		c.cache.Set(key, &result, cache.DefaultExpiration)
 	}
 
 	return &result, nil
