@@ -103,13 +103,14 @@ func (c *Client) fetchEvaluation(evaluateURL string, ctx EvaluationContext) (*Re
 func (c *Client) SendTelemetry(payload TelemetryPayload) error {
 	var lastErr error
 	for _, endpoint := range c.endpoints {
-		if err := c.postTelemetry(endpoint.Telemetry, payload); err == nil {
-			return nil
-		} else {
+		err := c.postTelemetry(endpoint.Telemetry, payload)
+		if err != nil {
 			lastErr = err
+			continue
 		}
+		return nil
 	}
-	return fmt.Errorf("failed to send telemetry to all endpoints: %v", lastErr)
+	return fmt.Errorf("all telemetry attempts failed: %v", lastErr)
 }
 
 func (c *Client) postTelemetry(telemetryURL string, payload TelemetryPayload) error {
