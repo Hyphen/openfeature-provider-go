@@ -1,4 +1,4 @@
-module github.com/hyphen-ai/openfeature-provider-go
+module github.com/hyphen/openfeature-provider-go
 
 go 1.21
 
