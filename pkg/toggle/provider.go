@@ -8,7 +8,7 @@ import (
 type Provider struct {
 	config    Config
 	client    *Client
-	endpoints endpoints
+	endpoints []endpoints
 }
 
 func NewProvider(config Config) (*Provider, error) {
@@ -16,13 +16,13 @@ func NewProvider(config Config) (*Provider, error) {
 		return nil, err
 	}
 
-	if config.HorizonServerURL == "" {
-		config.HorizonServerURL = DefaultHorizonURL
+	if len(config.HorizonServerURLs) == 0 {
+		config.HorizonServerURLs = []string{DefaultHorizonURL}
 	}
 
 	p := &Provider{
 		config:    config,
-		endpoints: newEndpoints(config.HorizonServerURL),
+		endpoints: newEndpoints(config.HorizonServerURLs),
 	}
 
 	client, err := newClient(config)

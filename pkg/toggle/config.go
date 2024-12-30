@@ -10,11 +10,15 @@ type endpoints struct {
 	Telemetry string
 }
 
-func newEndpoints(baseURL string) endpoints {
-	return endpoints{
-		Evaluate:  baseURL + "/toggle/evaluate",
-		Telemetry: baseURL + "/toggle/telemetry",
+func newEndpoints(urls []string) []endpoints {
+	result := make([]endpoints, len(urls))
+	for i, url := range urls {
+		result[i] = endpoints{
+			Evaluate:  url + "/toggle/evaluate",
+			Telemetry: url + "/toggle/telemetry",
+		}
 	}
+	return result
 }
 
 func validateConfig(config Config) error {
