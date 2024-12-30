@@ -15,22 +15,22 @@ type Client struct {
 	config     Config
 	publicKey  string
 	keyGen     func(ctx EvaluationContext) string
-	serverURLs []string
+	endpoints  []HorizonEndpoints
 }
 
 func newClient(config Config) (*Client, error) {
 	urls := config.HorizonServerURLs
 	if len(urls) == 0 {
-		urls = []string{DefaultHorizonURL}
+		urls = []string{horizon.URL}
 	}
 
 	c := &Client{
 		httpClient: &http.Client{
 			Timeout: time.Second * 10,
 		},
-		config:     config,
-		publicKey:  config.PublicKey,
-		serverURLs: urls,
+		config:    config,
+		publicKey: config.PublicKey,
+		endpoints: newEndpoints(urls),
 	}
 
 	if config.Cache != nil {
@@ -50,8 +50,8 @@ func (c *Client) Evaluate(ctx EvaluationContext) (*Response, error) {
 	}
 
 	var lastErr error
-	for _, url := range c.serverURLs {
-		resp, err := c.fetchEvaluation(url, ctx)
+	for _, endpoint := range c.endpoints {
+		resp, err := c.fetchEvaluation(endpoint.Evaluate, ctx)
 		if err != nil {
 			lastErr = err
 			continue
@@ -68,13 +68,13 @@ func (c *Client) Evaluate(ctx EvaluationContext) (*Response, error) {
 	return nil, fmt.Errorf("all evaluation attempts failed: %v", lastErr)
 }
 
-func (c *Client) fetchEvaluation(url string, ctx EvaluationContext) (*Response, error) {
+func (c *Client) fetchEvaluation(evaluateURL string, ctx EvaluationContext) (*Response, error) {
 	payload, err := json.Marshal(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	req, err := http.NewRequest("POST", url+"/evaluate", bytes.NewBuffer(payload))
+	req, err := http.NewRequest("POST", evaluateURL, bytes.NewBuffer(payload))
 	if err != nil {
 		return nil, err
 	}
@@ -101,21 +101,24 @@ func (c *Client) fetchEvaluation(url string, ctx EvaluationContext) (*Response, 
 }
 
 func (c *Client) SendTelemetry(payload TelemetryPayload) error {
-	for _, url := range c.serverURLs {
-		if err := c.postTelemetry(url, payload); err == nil {
+	var lastErr error
+	for _, endpoint := range c.endpoints {
+		if err := c.postTelemetry(endpoint.Telemetry, payload); err == nil {
 			return nil
+		} else {
+			lastErr = err
 		}
 	}
-	return fmt.Errorf("failed to send telemetry to all endpoints")
+	return fmt.Errorf("failed to send telemetry to all endpoints: %v", lastErr)
 }
 
-func (c *Client) postTelemetry(url string, payload TelemetryPayload) error {
+func (c *Client) postTelemetry(telemetryURL string, payload TelemetryPayload) error {
 	data, err := json.Marshal(payload)
 	if err != nil {
 		return err
 	}
 
-	req, err := http.NewRequest("POST", url+"/telemetry", bytes.NewBuffer(data))
+	req, err := http.NewRequest("POST", telemetryURL, bytes.NewBuffer(data))
 	if err != nil {
 		return err
 	}

@@ -5,20 +5,35 @@ const (
 	DefaultCacheTTL   = 30
 )
 
-type endpoints struct {
+type HorizonConfig struct {
+	URL string
+}
+
+type HorizonEndpoints struct {
 	Evaluate  string
 	Telemetry string
 }
 
-func newEndpoints(urls []string) []endpoints {
-	result := make([]endpoints, len(urls))
+var (
+	horizon = HorizonConfig{
+		URL: "https://horizon.hyphen.ai",
+	}
+
+	horizonEndpoints = HorizonEndpoints{
+		Evaluate:  horizon.URL + "/toggle/evaluate",
+		Telemetry: horizon.URL + "/toggle/telemetry",
+	}
+)
+
+func newEndpoints(urls []string) []HorizonEndpoints {
+	endpoints := make([]HorizonEndpoints, len(urls))
 	for i, url := range urls {
-		result[i] = endpoints{
+		endpoints[i] = HorizonEndpoints{
 			Evaluate:  url + "/toggle/evaluate",
 			Telemetry: url + "/toggle/telemetry",
 		}
 	}
-	return result
+	return endpoints
 }
 
 func validateConfig(config Config) error {

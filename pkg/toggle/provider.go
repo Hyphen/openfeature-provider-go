@@ -8,7 +8,8 @@ import (
 type Provider struct {
 	config    Config
 	client    *Client
-	endpoints []endpoints
+	endpoints []HorizonEndpoints
+	hooks     []openfeature.Hook
 }
 
 func NewProvider(config Config) (*Provider, error) {
@@ -17,7 +18,7 @@ func NewProvider(config Config) (*Provider, error) {
 	}
 
 	if len(config.HorizonServerURLs) == 0 {
-		config.HorizonServerURLs = []string{DefaultHorizonURL}
+		config.HorizonServerURLs = []string{horizon.URL}
 	}
 
 	p := &Provider{
@@ -30,6 +31,9 @@ func NewProvider(config Config) (*Provider, error) {
 		return nil, err
 	}
 	p.client = client
+
+	hook := NewProviderHook(p)
+	p.hooks = []openfeature.Hook{hook}
 
 	return p, nil
 }
@@ -369,4 +373,8 @@ func (p *Provider) buildContext(evalCtx openfeature.FlattenedContext) (Evaluatio
 	}
 
 	return ctx, nil
+}
+
+func (p *Provider) Hooks() []openfeature.Hook {
+	return p.hooks
 }
