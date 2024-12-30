@@ -1,4 +1,4 @@
-package hyphen
+package toggle
 
 import (
 	"bytes"

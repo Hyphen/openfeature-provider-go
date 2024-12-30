@@ -1,4 +1,4 @@
-package hyphen
+package toggle
 
 type Config struct {
 	PublicKey        string

@@ -1,4 +1,4 @@
-package hyphen
+package toggle
 
 const (
 	DefaultHorizonURL = "https://dev-horizon.hyphen.ai"
