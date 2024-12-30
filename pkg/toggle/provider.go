@@ -2,7 +2,6 @@ package toggle
 
 import (
 	"context"
-
 	"github.com/open-feature/go-sdk/openfeature"
 )
 
@@ -46,7 +45,15 @@ func (p *Provider) BooleanEvaluation(ctx context.Context, flag string, defaultVa
 	if err != nil {
 		return openfeature.BooleanEvaluationDetails{
 			Value: defaultValue,
-			Error: err,
+			EvaluationDetails: openfeature.EvaluationDetails{
+				FlagKey:  flag,
+				FlagType: openfeature.Boolean,
+				ResolutionDetail: openfeature.ResolutionDetail{
+					Reason:       openfeature.ErrorReason,
+					ErrorCode:    openfeature.ParseErrorCode,
+					ErrorMessage: err.Error(),
+				},
+			},
 		}
 	}
 
@@ -54,26 +61,292 @@ func (p *Provider) BooleanEvaluation(ctx context.Context, flag string, defaultVa
 	if err != nil {
 		return openfeature.BooleanEvaluationDetails{
 			Value: defaultValue,
-			Error: err,
+			EvaluationDetails: openfeature.EvaluationDetails{
+				FlagKey:  flag,
+				FlagType: openfeature.Boolean,
+				ResolutionDetail: openfeature.ResolutionDetail{
+					Reason:       openfeature.ErrorReason,
+					ErrorCode:    openfeature.GeneralCode,
+					ErrorMessage: err.Error(),
+				},
+			},
 		}
 	}
 
 	if toggle, ok := eval.Toggles[flag]; ok && toggle.Type == "boolean" {
 		if value, ok := toggle.Value.(bool); ok {
 			return openfeature.BooleanEvaluationDetails{
-				Value:  value,
-				Reason: openfeature.TargetingMatchReason,
+				Value: value,
+				EvaluationDetails: openfeature.EvaluationDetails{
+					FlagKey:  flag,
+					FlagType: openfeature.Boolean,
+					ResolutionDetail: openfeature.ResolutionDetail{
+						Reason: openfeature.TargetingMatchReason,
+					},
+				},
 			}
 		}
 	}
 
 	return openfeature.BooleanEvaluationDetails{
 		Value: defaultValue,
-		Error: ErrInvalidFlagType,
+		EvaluationDetails: openfeature.EvaluationDetails{
+			FlagKey:  flag,
+			FlagType: openfeature.Boolean,
+			ResolutionDetail: openfeature.ResolutionDetail{
+				Reason:       openfeature.ErrorReason,
+				ErrorCode:    openfeature.TypeMismatchCode,
+				ErrorMessage: ErrInvalidFlagType.Error(),
+			},
+		},
 	}
 }
 
-// Similar implementations for StringEvaluation, NumberEvaluation, and ObjectEvaluation...
+func (p *Provider) StringEvaluation(ctx context.Context, flag string, defaultValue string, evalCtx openfeature.FlattenedContext) openfeature.StringEvaluationDetails {
+	hyphenCtx, err := p.buildContext(evalCtx)
+	if err != nil {
+		return openfeature.StringEvaluationDetails{
+			Value: defaultValue,
+			EvaluationDetails: openfeature.EvaluationDetails{
+				FlagKey:  flag,
+				FlagType: openfeature.String,
+				ResolutionDetail: openfeature.ResolutionDetail{
+					Reason:       openfeature.ErrorReason,
+					ErrorCode:    openfeature.ParseErrorCode,
+					ErrorMessage: err.Error(),
+				},
+			},
+		}
+	}
+
+	eval, err := p.client.Evaluate(hyphenCtx)
+	if err != nil {
+		return openfeature.StringEvaluationDetails{
+			Value: defaultValue,
+			EvaluationDetails: openfeature.EvaluationDetails{
+				FlagKey:  flag,
+				FlagType: openfeature.String,
+				ResolutionDetail: openfeature.ResolutionDetail{
+					Reason:       openfeature.ErrorReason,
+					ErrorCode:    openfeature.GeneralCode,
+					ErrorMessage: err.Error(),
+				},
+			},
+		}
+	}
+
+	if toggle, ok := eval.Toggles[flag]; ok && toggle.Type == "string" {
+		if value, ok := toggle.Value.(string); ok {
+			return openfeature.StringEvaluationDetails{
+				Value: value,
+				EvaluationDetails: openfeature.EvaluationDetails{
+					FlagKey:  flag,
+					FlagType: openfeature.String,
+					ResolutionDetail: openfeature.ResolutionDetail{
+						Reason: openfeature.TargetingMatchReason,
+					},
+				},
+			}
+		}
+	}
+
+	return openfeature.StringEvaluationDetails{
+		Value: defaultValue,
+		EvaluationDetails: openfeature.EvaluationDetails{
+			FlagKey:  flag,
+			FlagType: openfeature.String,
+			ResolutionDetail: openfeature.ResolutionDetail{
+				Reason:       openfeature.ErrorReason,
+				ErrorCode:    openfeature.TypeMismatchCode,
+				ErrorMessage: ErrInvalidFlagType.Error(),
+			},
+		},
+	}
+}
+
+func (p *Provider) FloatEvaluation(ctx context.Context, flag string, defaultValue float64, evalCtx openfeature.FlattenedContext) openfeature.FloatEvaluationDetails {
+	hyphenCtx, err := p.buildContext(evalCtx)
+	if err != nil {
+		return openfeature.FloatEvaluationDetails{
+			Value: defaultValue,
+			EvaluationDetails: openfeature.EvaluationDetails{
+				FlagKey:  flag,
+				FlagType: openfeature.Float,
+				ResolutionDetail: openfeature.ResolutionDetail{
+					Reason:       openfeature.ErrorReason,
+					ErrorCode:    openfeature.ParseErrorCode,
+					ErrorMessage: err.Error(),
+				},
+			},
+		}
+	}
+
+	eval, err := p.client.Evaluate(hyphenCtx)
+	if err != nil {
+		return openfeature.FloatEvaluationDetails{
+			Value: defaultValue,
+			EvaluationDetails: openfeature.EvaluationDetails{
+				FlagKey:  flag,
+				FlagType: openfeature.Float,
+				ResolutionDetail: openfeature.ResolutionDetail{
+					Reason:       openfeature.ErrorReason,
+					ErrorCode:    openfeature.GeneralCode,
+					ErrorMessage: err.Error(),
+				},
+			},
+		}
+	}
+
+	if toggle, ok := eval.Toggles[flag]; ok && toggle.Type == "float" {
+		if value, ok := toggle.Value.(float64); ok {
+			return openfeature.FloatEvaluationDetails{
+				Value: value,
+				EvaluationDetails: openfeature.EvaluationDetails{
+					FlagKey:  flag,
+					FlagType: openfeature.Float,
+					ResolutionDetail: openfeature.ResolutionDetail{
+						Reason: openfeature.TargetingMatchReason,
+					},
+				},
+			}
+		}
+	}
+
+	return openfeature.FloatEvaluationDetails{
+		Value: defaultValue,
+		EvaluationDetails: openfeature.EvaluationDetails{
+			FlagKey:  flag,
+			FlagType: openfeature.Float,
+			ResolutionDetail: openfeature.ResolutionDetail{
+				Reason:       openfeature.ErrorReason,
+				ErrorCode:    openfeature.TypeMismatchCode,
+				ErrorMessage: ErrInvalidFlagType.Error(),
+			},
+		},
+	}
+}
+
+func (p *Provider) IntEvaluation(ctx context.Context, flag string, defaultValue int64, evalCtx openfeature.FlattenedContext) openfeature.IntEvaluationDetails {
+	hyphenCtx, err := p.buildContext(evalCtx)
+	if err != nil {
+		return openfeature.IntEvaluationDetails{
+			Value: defaultValue,
+			EvaluationDetails: openfeature.EvaluationDetails{
+				FlagKey:  flag,
+				FlagType: openfeature.Int,
+				ResolutionDetail: openfeature.ResolutionDetail{
+					Reason:       openfeature.ErrorReason,
+					ErrorCode:    openfeature.ParseErrorCode,
+					ErrorMessage: err.Error(),
+				},
+			},
+		}
+	}
+
+	eval, err := p.client.Evaluate(hyphenCtx)
+	if err != nil {
+		return openfeature.IntEvaluationDetails{
+			Value: defaultValue,
+			EvaluationDetails: openfeature.EvaluationDetails{
+				FlagKey:  flag,
+				FlagType: openfeature.Int,
+				ResolutionDetail: openfeature.ResolutionDetail{
+					Reason:       openfeature.ErrorReason,
+					ErrorCode:    openfeature.GeneralCode,
+					ErrorMessage: err.Error(),
+				},
+			},
+		}
+	}
+
+	if toggle, ok := eval.Toggles[flag]; ok && toggle.Type == "int" {
+		if value, ok := toggle.Value.(int64); ok {
+			return openfeature.IntEvaluationDetails{
+				Value: value,
+				EvaluationDetails: openfeature.EvaluationDetails{
+					FlagKey:  flag,
+					FlagType: openfeature.Int,
+					ResolutionDetail: openfeature.ResolutionDetail{
+						Reason: openfeature.TargetingMatchReason,
+					},
+				},
+			}
+		}
+	}
+
+	return openfeature.IntEvaluationDetails{
+		Value: defaultValue,
+		EvaluationDetails: openfeature.EvaluationDetails{
+			FlagKey:  flag,
+			FlagType: openfeature.Int,
+			ResolutionDetail: openfeature.ResolutionDetail{
+				Reason:       openfeature.ErrorReason,
+				ErrorCode:    openfeature.TypeMismatchCode,
+				ErrorMessage: ErrInvalidFlagType.Error(),
+			},
+		},
+	}
+}
+
+func (p *Provider) ObjectEvaluation(ctx context.Context, flag string, defaultValue interface{}, evalCtx openfeature.FlattenedContext) openfeature.InterfaceEvaluationDetails {
+	hyphenCtx, err := p.buildContext(evalCtx)
+	if err != nil {
+		return openfeature.InterfaceEvaluationDetails{
+			Value: defaultValue,
+			EvaluationDetails: openfeature.EvaluationDetails{
+				FlagKey:  flag,
+				FlagType: openfeature.Object,
+				ResolutionDetail: openfeature.ResolutionDetail{
+					Reason:       openfeature.ErrorReason,
+					ErrorCode:    openfeature.ParseErrorCode,
+					ErrorMessage: err.Error(),
+				},
+			},
+		}
+	}
+
+	eval, err := p.client.Evaluate(hyphenCtx)
+	if err != nil {
+		return openfeature.InterfaceEvaluationDetails{
+			Value: defaultValue,
+			EvaluationDetails: openfeature.EvaluationDetails{
+				FlagKey:  flag,
+				FlagType: openfeature.Object,
+				ResolutionDetail: openfeature.ResolutionDetail{
+					Reason:       openfeature.ErrorReason,
+					ErrorCode:    openfeature.GeneralCode,
+					ErrorMessage: err.Error(),
+				},
+			},
+		}
+	}
+
+	if toggle, ok := eval.Toggles[flag]; ok && toggle.Type == "object" {
+		return openfeature.InterfaceEvaluationDetails{
+			Value: toggle.Value,
+			EvaluationDetails: openfeature.EvaluationDetails{
+				FlagKey:  flag,
+				FlagType: openfeature.Object,
+				ResolutionDetail: openfeature.ResolutionDetail{
+					Reason: openfeature.TargetingMatchReason,
+				},
+			},
+		}
+	}
+
+	return openfeature.InterfaceEvaluationDetails{
+		Value: defaultValue,
+		EvaluationDetails: openfeature.EvaluationDetails{
+			FlagKey:  flag,
+			FlagType: openfeature.Object,
+			ResolutionDetail: openfeature.ResolutionDetail{
+				Reason:       openfeature.ErrorReason,
+				ErrorCode:    openfeature.TypeMismatchCode,
+				ErrorMessage: ErrInvalidFlagType.Error(),
+			},
+		},
+	}
+}
 
 func (p *Provider) buildContext(evalCtx openfeature.FlattenedContext) (EvaluationContext, error) {
 	targetingKey, ok := evalCtx["targetingKey"].(string)
