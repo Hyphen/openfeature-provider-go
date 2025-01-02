@@ -12,10 +12,9 @@ import (
 func main() {
 	// Configuration for the Hyphen provider
 	config := toggle.Config{
-		Application:       "application-id",
-		Environment:       "production",
-		PublicKey:         "your-public-key",
-		HorizonServerURLs: []string{"https://horizon.hyphen.ai"},
+		Application: "application-id",
+		Environment: "production",
+		PublicKey:   "your-public-key",
 	}
 
 	// Initialize the provider
@@ -34,9 +33,23 @@ func main() {
 	evalCtx := openfeature.NewEvaluationContext(
 		"user-123",
 		map[string]interface{}{
-			"region": "us-east",
+			"targetingKey": "user-123",
+			"ipAddress":    "203.0.113.42",
+			"customAttributes": map[string]interface{}{
+				"subscriptionLevel": "premium",
+				"region":            "us-east",
+			},
+			"user": map[string]interface{}{
+				"id":    "user-123",
+				"email": "user@example.com",
+				"name":  "John Doe",
+				"customAttributes": map[string]interface{}{
+					"role": "admin",
+				},
+			},
 		},
 	)
+
 	// Evaluate a feature flag
 	ctx := context.Background()
 	flagKey := "my-bool-toggle"
