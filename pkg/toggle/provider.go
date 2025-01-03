@@ -264,16 +264,16 @@ func (p *Provider) buildContext(evalCtx openfeature.FlattenedContext) (Evaluatio
 	}
 
 	ctx := EvaluationContext{
-		TargetingKey: targetingKey,
-		Application:  p.config.Application,
-		Environment:  p.config.Environment,
-		Attributes:   make(map[string]interface{}),
+		TargetingKey:     targetingKey,
+		Application:      p.config.Application,
+		Environment:      p.config.Environment,
+		CustomAttributes: make(map[string]interface{}),
 	}
 
 	// Copy additional attributes
 	for k, v := range evalCtx {
 		if k != "targetingKey" {
-			ctx.Attributes[k] = v
+			ctx.CustomAttributes[k] = v
 		}
 	}
 

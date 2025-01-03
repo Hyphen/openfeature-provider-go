@@ -52,10 +52,10 @@ func (h *ProviderHook) After(ctx context.Context, hookContext openfeature.HookCo
 
 	evalCtx := hookContext.EvaluationContext()
 	hyphenCtx := EvaluationContext{
-		TargetingKey: evalCtx.TargetingKey(),
-		Application:  h.provider.config.Application,
-		Environment:  h.provider.config.Environment,
-		Attributes:   evalCtx.Attributes(),
+		TargetingKey:     evalCtx.TargetingKey(),
+		Application:      h.provider.config.Application,
+		Environment:      h.provider.config.Environment,
+		CustomAttributes: evalCtx.Attributes(),
 	}
 
 	payload := TelemetryPayload{

@@ -12,9 +12,9 @@ import (
 func main() {
 	// Configuration for the Hyphen provider
 	config := toggle.Config{
-		Application: "application-id",
+		Application: "app",
 		Environment: "production",
-		PublicKey:   "your-public-key",
+		PublicKey:   "public_b3JnXzY2OGI2MDM0NTc1YzExMjcwZDFiNzNlYjpwcm9qXzY2ZmVkM2RlMzA1NmZjYjM5ZjcxZTM1ZDpaZ3RoZlY3cUl1d0hyQ0xkWk1FUg==",
 	}
 
 	// Initialize the provider
