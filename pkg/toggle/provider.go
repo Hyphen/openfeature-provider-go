@@ -156,10 +156,25 @@ func (p *Provider) FloatEvaluation(ctx context.Context, flag string, defaultValu
 		}
 	}
 
-	if toggle, ok := eval.Toggles[flag]; ok && toggle.Type == "float" {
-		if value, ok := toggle.Value.(float64); ok {
+	if toggle, ok := eval.Toggles[flag]; ok && toggle.Type == "number" {
+		switch v := toggle.Value.(type) {
+		case float64:
 			return openfeature.FloatResolutionDetail{
-				Value: value,
+				Value: v,
+				ProviderResolutionDetail: openfeature.ProviderResolutionDetail{
+					Reason: openfeature.TargetingMatchReason,
+				},
+			}
+		case int:
+			return openfeature.FloatResolutionDetail{
+				Value: float64(v),
+				ProviderResolutionDetail: openfeature.ProviderResolutionDetail{
+					Reason: openfeature.TargetingMatchReason,
+				},
+			}
+		case int64:
+			return openfeature.FloatResolutionDetail{
+				Value: float64(v),
 				ProviderResolutionDetail: openfeature.ProviderResolutionDetail{
 					Reason: openfeature.TargetingMatchReason,
 				},
@@ -175,6 +190,7 @@ func (p *Provider) FloatEvaluation(ctx context.Context, flag string, defaultValu
 		},
 	}
 }
+
 func (p *Provider) IntEvaluation(ctx context.Context, flag string, defaultValue int64, evalCtx openfeature.FlattenedContext) openfeature.IntResolutionDetail {
 	hyphenCtx, err := p.buildContext(evalCtx)
 	if err != nil {
@@ -198,10 +214,25 @@ func (p *Provider) IntEvaluation(ctx context.Context, flag string, defaultValue 
 		}
 	}
 
-	if toggle, ok := eval.Toggles[flag]; ok && toggle.Type == "int" {
-		if value, ok := toggle.Value.(int64); ok {
+	if toggle, ok := eval.Toggles[flag]; ok && toggle.Type == "number" {
+		switch v := toggle.Value.(type) {
+		case int:
 			return openfeature.IntResolutionDetail{
-				Value: value,
+				Value: int64(v),
+				ProviderResolutionDetail: openfeature.ProviderResolutionDetail{
+					Reason: openfeature.TargetingMatchReason,
+				},
+			}
+		case int64:
+			return openfeature.IntResolutionDetail{
+				Value: v,
+				ProviderResolutionDetail: openfeature.ProviderResolutionDetail{
+					Reason: openfeature.TargetingMatchReason,
+				},
+			}
+		case float64:
+			return openfeature.IntResolutionDetail{
+				Value: int64(v),
 				ProviderResolutionDetail: openfeature.ProviderResolutionDetail{
 					Reason: openfeature.TargetingMatchReason,
 				},
@@ -217,6 +248,7 @@ func (p *Provider) IntEvaluation(ctx context.Context, flag string, defaultValue 
 		},
 	}
 }
+
 func (p *Provider) ObjectEvaluation(ctx context.Context, flag string, defaultValue interface{}, evalCtx openfeature.FlattenedContext) openfeature.InterfaceResolutionDetail {
 	hyphenCtx, err := p.buildContext(evalCtx)
 	if err != nil {
