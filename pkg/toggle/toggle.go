@@ -17,12 +17,12 @@ type CacheConfig struct {
 }
 
 type EvaluationContext struct {
-	TargetingKey               string                 `json:"targetingKey"`
-	IPAddress                  string                 `json:"ipAddress,omitempty"`
-	Application                string                 `json:"application"`
-	Environment                string                 `json:"environment"`
-	User                       *User                  `json:"user,omitempty"`
-	CustomAttributesAttributes map[string]interface{} `json:"customAttributes,omitempty"`
+	TargetingKey     string                 `json:"targetingKey"`
+	IPAddress        string                 `json:"ipAddress,omitempty"`
+	Application      string                 `json:"application"`
+	Environment      string                 `json:"environment"`
+	User             *User                  `json:"user,omitempty"`
+	CustomAttributes map[string]interface{} `json:"customAttributes,omitempty"`
 }
 
 type User struct {
