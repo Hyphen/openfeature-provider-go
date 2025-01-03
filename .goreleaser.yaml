@@ -1,0 +1,25 @@
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+      - '^ci:'
+      - Merge pull request
+      - Merge branch
+
+release:
+  github:
+    owner: openfeature
+    name: provider-go
+
+  # If you want to add extra header/footer text in the release notes
+  header: |
+    ## OpenFeature Go Provider ({{ .Tag }})
+  footer: |
+    ## Thanks!
+    For more information, please check the [README.md](README.md)
+
+builds:
+  - skip: true
