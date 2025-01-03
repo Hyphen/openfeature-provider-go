@@ -10,29 +10,31 @@ import (
 	"github.com/open-feature/go-sdk/openfeature"
 )
 
-type GammaStruct struct {
-	Field1 string `json:"field1,omitempty"`
-	Field2 int    `json:"field2,omitempty"`
-}
-
 func main() {
+	// Configuration for the Hyphen provider
 	config := toggle.Config{
-		Application:       "application-id",
+		Application:       "application_id",
 		Environment:       "production",
-		PublicKey:         "your-apikey",
-		HorizonServerURLs: []string{"https://horizon.hyphen.ai"},
+		PublicKey:         "your-key",
+		HorizonServerURLs: []string{"https://dev-horizon.hyphen.ai"},
 	}
 
+	// Initialize the provider
 	provider, err := toggle.NewProvider(config)
 	if err != nil {
 		log.Fatalf("Failed to initialize provider: %v", err)
 	}
 
+	// Register the provider
 	openfeature.SetProvider(provider)
+
+	// Add a small delay to ensure provider initialization
 	time.Sleep(100 * time.Millisecond)
 
+	// Create an OpenFeature client
 	client := openfeature.NewClient("basic-example")
 
+	// Define evaluation context
 	evalCtx := openfeature.NewEvaluationContext(
 		"user-123",
 		map[string]interface{}{
@@ -52,61 +54,19 @@ func main() {
 		},
 	)
 
+	// Add context with logger
 	ctx := context.Background()
+	ctx = context.WithValue(ctx, "logger", log.Default())
 
-	evaluateStringFlags(ctx, client, evalCtx)
-	evaluateNumberFlags(ctx, client, evalCtx)
-	evaluateBooleanFlag(ctx, client, evalCtx)
-	evaluateObjectFlag(ctx, client, evalCtx)
-}
+	// Evaluate a feature flag
+	flagKey := "beta"
+	defaultValue := "default value"
 
-func evaluateStringFlags(ctx context.Context, client *openfeature.Client, evalCtx openfeature.EvaluationContext) {
-	alphaDetails, err := client.StringValueDetails(ctx, "alpha", "default string", evalCtx)
+	result, err := client.StringValue(ctx, flagKey, defaultValue, evalCtx)
 	if err != nil {
-		log.Printf("Error evaluating alpha flag: %v", err)
+		log.Printf("Evaluation context: %+v", evalCtx)
+		log.Fatalf("Error evaluating flag: %v", err)
 	}
-	fmt.Printf("Feature flag 'alpha' is %s (variant: %s, reason: %s)\n",
-		alphaDetails.Value, alphaDetails.Variant, alphaDetails.Reason)
 
-	betaDetails, err := client.StringValueDetails(ctx, "beta", "default string", evalCtx)
-	if err != nil {
-		log.Printf("Error evaluating beta flag: %v", err)
-	}
-	fmt.Printf("Feature flag 'beta' is %s (variant: %s, reason: %s)\n",
-		betaDetails.Value, betaDetails.Variant, betaDetails.Reason)
-}
-
-func evaluateNumberFlags(ctx context.Context, client *openfeature.Client, evalCtx openfeature.EvaluationContext) {
-	deltaDetails, err := client.FloatValueDetails(ctx, "delta", 1.0, evalCtx)
-	if err != nil {
-		log.Printf("Error evaluating delta flag: %v", err)
-	}
-	fmt.Printf("Feature flag 'delta' is %v (variant: %s, reason: %s)\n",
-		deltaDetails.Value, deltaDetails.Variant, deltaDetails.Reason)
-
-	periDetails, err := client.FloatValueDetails(ctx, "peri", 0.0, evalCtx)
-	if err != nil {
-		log.Printf("Error evaluating peri flag: %v", err)
-	}
-	fmt.Printf("Feature flag 'peri' is %v (variant: %s, reason: %s)\n",
-		periDetails.Value, periDetails.Variant, periDetails.Reason)
-}
-
-func evaluateBooleanFlag(ctx context.Context, client *openfeature.Client, evalCtx openfeature.EvaluationContext) {
-	tetaDetails, err := client.BooleanValueDetails(ctx, "teta", false, evalCtx)
-	if err != nil {
-		log.Printf("Error evaluating teta flag: %v", err)
-	}
-	fmt.Printf("Feature flag 'teta' is %v (variant: %s, reason: %s)\n",
-		tetaDetails.Value, tetaDetails.Variant, tetaDetails.Reason)
-}
-
-func evaluateObjectFlag(ctx context.Context, client *openfeature.Client, evalCtx openfeature.EvaluationContext) {
-	defaultGamma := GammaStruct{}
-	gammaDetails, err := client.ObjectValueDetails(ctx, "gamma", defaultGamma, evalCtx)
-	if err != nil {
-		log.Printf("Error evaluating gamma flag: %v", err)
-	}
-	fmt.Printf("Feature flag 'gamma' is %+v (variant: %s, reason: %s)\n",
-		gammaDetails.Value, gammaDetails.Variant, gammaDetails.Reason)
+	fmt.Printf("Feature flag '%s' is %s\n", flagKey, result)
 }

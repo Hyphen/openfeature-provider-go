@@ -9,6 +9,11 @@ import (
 	"time"
 )
 
+type ClientInterface interface {
+	Evaluate(ctx EvaluationContext) (*Response, error)
+	SendTelemetry(payload TelemetryPayload) error
+}
+
 type Client struct {
 	httpClient *http.Client
 	cache      *cache.Cache

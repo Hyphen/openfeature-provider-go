@@ -7,7 +7,7 @@ import (
 
 type Provider struct {
 	config    Config
-	client    *Client
+	client    ClientInterface
 	endpoints []HorizonEndpoints
 	hooks     []openfeature.Hook
 }
