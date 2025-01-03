@@ -16,7 +16,7 @@ func main() {
 		Application:       "application_id",
 		Environment:       "production",
 		PublicKey:         "your-key",
-		HorizonServerURLs: []string{"https://dev-horizon.hyphen.ai"},
+		HorizonServerURLs: []string{"https://horizon.hyphen.ai"},
 	}
 
 	// Initialize the provider
