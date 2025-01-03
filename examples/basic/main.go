@@ -6,7 +6,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/hyphen-ai/openfeature-provider-go/pkg/toggle"
+	"github.com/hyphen/openfeature-provider-go/pkg/toggle"
 	"github.com/open-feature/go-sdk/openfeature"
 )
 
