@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/hyphen-ai/openfeature-provider-go/pkg/toggle"
 	"github.com/open-feature/go-sdk/openfeature"
@@ -12,9 +13,10 @@ import (
 func main() {
 	// Configuration for the Hyphen provider
 	config := toggle.Config{
-		Application: "app",
-		Environment: "production",
-		PublicKey:   "public_b3JnXzY2OGI2MDM0NTc1YzExMjcwZDFiNzNlYjpwcm9qXzY2ZmVkM2RlMzA1NmZjYjM5ZjcxZTM1ZDpaZ3RoZlY3cUl1d0hyQ0xkWk1FUg==",
+		Application:       "application_id",
+		Environment:       "production",
+		PublicKey:         "your-key",
+		HorizonServerURLs: []string{"https://dev-horizon.hyphen.ai"},
 	}
 
 	// Initialize the provider
@@ -26,6 +28,9 @@ func main() {
 	// Register the provider
 	openfeature.SetProvider(provider)
 
+	// Add a small delay to ensure provider initialization
+	time.Sleep(100 * time.Millisecond)
+
 	// Create an OpenFeature client
 	client := openfeature.NewClient("basic-example")
 
@@ -33,12 +38,7 @@ func main() {
 	evalCtx := openfeature.NewEvaluationContext(
 		"user-123",
 		map[string]interface{}{
-			"targetingKey": "user-123",
-			"ipAddress":    "203.0.113.42",
-			"customAttributes": map[string]interface{}{
-				"subscriptionLevel": "premium",
-				"region":            "us-east",
-			},
+			"ipAddress": "203.0.113.42",
 			"user": map[string]interface{}{
 				"id":    "user-123",
 				"email": "user@example.com",
@@ -47,17 +47,26 @@ func main() {
 					"role": "admin",
 				},
 			},
+			"customAttributes": map[string]interface{}{
+				"subscriptionLevel": "premium",
+				"region":            "us-east",
+			},
 		},
 	)
 
-	// Evaluate a feature flag
+	// Add context with logger
 	ctx := context.Background()
-	flagKey := "my-bool-toggle"
-	defaultValue := false
-	result, err := client.BooleanValue(ctx, flagKey, defaultValue, evalCtx)
+	ctx = context.WithValue(ctx, "logger", log.Default())
+
+	// Evaluate a feature flag
+	flagKey := "beta"
+	defaultValue := "default value"
+
+	result, err := client.StringValue(ctx, flagKey, defaultValue, evalCtx)
 	if err != nil {
-		// Handle the error appropriately
+		log.Printf("Evaluation context: %+v", evalCtx)
 		log.Fatalf("Error evaluating flag: %v", err)
 	}
-	fmt.Printf("Feature flag '%s' is %t\n", flagKey, result)
+
+	fmt.Printf("Feature flag '%s' is %s\n", flagKey, result)
 }
