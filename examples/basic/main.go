@@ -13,10 +13,9 @@ import (
 func main() {
 	// Configuration for the Hyphen provider
 	config := toggle.Config{
-		Application:       "application_id",
-		Environment:       "production",
-		PublicKey:         "your-key",
-		HorizonServerURLs: []string{"https://horizon.hyphen.ai"},
+		Application: "application_id",
+		Environment: "production",
+		PublicKey:   "your-key",
 	}
 
 	// Initialize the provider
