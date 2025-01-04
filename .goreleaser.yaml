@@ -1,4 +1,3 @@
-
 changelog:
   sort: asc
   filters:
@@ -11,8 +10,8 @@ changelog:
 
 release:
   github:
-    owner: openfeature
-    name: provider-go
+    owner: Hyphen
+    name: openfeature-provider-go
 
   # If you want to add extra header/footer text in the release notes
   header: |
@@ -22,4 +21,5 @@ release:
     For more information, please check the [README.md](README.md)
 
 builds:
-  - skip: true
+  - id: openfeature-provider-go
+    skip: true
