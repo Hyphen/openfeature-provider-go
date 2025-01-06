@@ -46,11 +46,11 @@ func TestNewProvider(t *testing.T) {
 			},
 			wantErr: false,
 			wantConfig: &Config{
-				PublicKey:         "test-key",
-				Application:       "test-app",
-				Environment:       "test-env",
-				HorizonServerURLs: []string{"https://horizon.hyphen.ai"}, // Include default URL
-				Cache:             nil,
+				PublicKey:   "test-key",
+				Application: "test-app",
+				Environment: "test-env",
+				HorizonUrls: []string{"https://horizon.hyphen.ai"}, // Include default URL
+				Cache:       nil,
 			},
 		},
 		{

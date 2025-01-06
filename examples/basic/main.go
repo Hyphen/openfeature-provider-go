@@ -13,10 +13,10 @@ import (
 func main() {
 	// Configuration for the Hyphen provider
 	config := toggle.Config{
-		Application:       "app",
-		Environment:       "production",
-		PublicKey:         "public_b3JnXzY2OGI2MDM0NTc1YzExMjcwZDFiNzNlYjpwcm9qXzY2ZmVkM2RlMzA1NmZjYjM5ZjcxZTM1ZDpaZ3RoZlY3cUl1d0hyQ0xkWk1FUg==",
-		HorizonServerURLs: []string{"https://dev-horizon.hyphen.ai"},
+		Application: "app",
+		Environment: "production",
+		PublicKey:   "public_b3JnXzY2OGI2MDM0NTc1YzExMjcwZDFiNzNlYjpwcm9qXzY2ZmVkM2RlMzA1NmZjYjM5ZjcxZTM1ZDpaZ3RoZlY3cUl1d0hyQ0xkWk1FUg==",
+		HorizonUrls: []string{"https://dev-horizon.hyphen.ai"},
 	}
 
 	// Initialize the provider

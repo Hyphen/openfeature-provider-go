@@ -19,8 +19,8 @@ func TestNewClient(t *testing.T) {
 		{
 			name: "valid config",
 			config: Config{
-				PublicKey:         "test-key",
-				HorizonServerURLs: []string{"http://test.com"},
+				PublicKey:   "test-key",
+				HorizonUrls: []string{"http://test.com"},
 			},
 			wantErr: false,
 		},
@@ -76,8 +76,8 @@ func TestClientEvaluate(t *testing.T) {
 	defer server.Close()
 
 	config := Config{
-		PublicKey:         "test-key",
-		HorizonServerURLs: []string{server.URL},
+		PublicKey:   "test-key",
+		HorizonUrls: []string{server.URL},
 	}
 
 	client, err := newClient(config)
@@ -113,8 +113,8 @@ func TestClientEvaluateWithCache(t *testing.T) {
 	defer server.Close()
 
 	config := Config{
-		PublicKey:         "test-key",
-		HorizonServerURLs: []string{server.URL},
+		PublicKey:   "test-key",
+		HorizonUrls: []string{server.URL},
 		Cache: &CacheConfig{
 			TTL: time.Minute,
 			KeyGen: func(ctx EvaluationContext) string {
@@ -154,8 +154,8 @@ func TestClientSendTelemetry(t *testing.T) {
 	defer server.Close()
 
 	config := Config{
-		PublicKey:         "test-key",
-		HorizonServerURLs: []string{server.URL},
+		PublicKey:   "test-key",
+		HorizonUrls: []string{server.URL},
 	}
 
 	client, err := newClient(config)

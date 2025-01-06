@@ -4,9 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/patrickmn/go-cache"
 	"net/http"
 	"time"
+
+	"github.com/patrickmn/go-cache"
 )
 
 type ClientInterface interface {
@@ -24,7 +25,7 @@ type Client struct {
 }
 
 func newClient(config Config) (*Client, error) {
-	urls := config.HorizonServerURLs
+	urls := config.HorizonUrls
 	if len(urls) == 0 {
 		urls = []string{horizon.URL}
 	}

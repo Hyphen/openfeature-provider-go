@@ -18,11 +18,6 @@ var (
 	horizon = HorizonConfig{
 		URL: "https://horizon.hyphen.ai",
 	}
-
-	horizonEndpoints = HorizonEndpoints{
-		Evaluate:  horizon.URL + "/toggle/evaluate",
-		Telemetry: horizon.URL + "/toggle/telemetry",
-	}
 )
 
 func newEndpoints(urls []string) []HorizonEndpoints {

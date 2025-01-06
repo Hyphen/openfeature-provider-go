@@ -2,7 +2,17 @@ package toggle
 
 import (
 	"context"
+	"encoding/base64"
+	"fmt"
+	"regexp"
+	"strings"
+
 	"github.com/open-feature/go-sdk/openfeature"
+)
+
+var (
+	defaultHorizonURL = "toggle.hyphen.cloud"
+	orgIDRegex        = regexp.MustCompile(`^[a-zA-Z0-9_-]+$`)
 )
 
 type Provider struct {
@@ -12,18 +22,44 @@ type Provider struct {
 	hooks     []openfeature.Hook
 }
 
+func extractOrgID(publicKey string) (string, error) {
+	key := strings.TrimPrefix(publicKey, "public_")
+
+	decoded, err := base64.StdEncoding.DecodeString(key)
+	if err != nil {
+		return "", nil
+	}
+
+	parts := strings.Split(string(decoded), ":")
+	if len(parts) < 2 {
+		return "", nil
+	}
+
+	orgID := parts[0]
+	if !orgIDRegex.MatchString(orgID) {
+		return "", nil
+	}
+
+	return orgID, nil
+}
+
 func NewProvider(config Config) (*Provider, error) {
 	if err := validateConfig(config); err != nil {
 		return nil, err
 	}
 
-	if len(config.HorizonServerURLs) == 0 {
-		config.HorizonServerURLs = []string{horizon.URL}
+	horizonUrls := config.HorizonUrls
+	if len(horizonUrls) == 0 {
+		url := fmt.Sprintf("https://%s", defaultHorizonURL)
+		if orgID, err := extractOrgID(config.PublicKey); err == nil && orgID != "" {
+			url = fmt.Sprintf("https://%s.%s", orgID, defaultHorizonURL)
+		}
+		horizonUrls = []string{url}
 	}
 
 	p := &Provider{
 		config:    config,
-		endpoints: newEndpoints(config.HorizonServerURLs),
+		endpoints: newEndpoints(horizonUrls),
 	}
 
 	client, err := newClient(config)
@@ -302,7 +338,6 @@ func (p *Provider) buildContext(evalCtx openfeature.FlattenedContext) (Evaluatio
 		CustomAttributes: make(map[string]interface{}),
 	}
 
-	// Copy additional attributes
 	for k, v := range evalCtx {
 		if k != "targetingKey" {
 			ctx.CustomAttributes[k] = v

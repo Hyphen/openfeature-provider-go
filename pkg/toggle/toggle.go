@@ -3,12 +3,12 @@ package toggle
 import "time"
 
 type Config struct {
-	PublicKey         string
-	Application       string
-	Environment       string
-	HorizonServerURLs []string
-	EnableUsage       *bool
-	Cache             *CacheConfig
+	PublicKey   string
+	Application string
+	Environment string
+	HorizonUrls []string
+	EnableUsage *bool
+	Cache       *CacheConfig
 }
 
 type CacheConfig struct {
