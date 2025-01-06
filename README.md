@@ -107,6 +107,21 @@ config := toggle.Config{
 }
 ```
 
+### Usage Telemetry
+
+By default, the provider sends telemetry data about feature flag evaluations to Hyphen (EnableUsage is `true`). To disable usage telemetry, you can set `EnableUsage` to `false` in the configuration:
+
+```go
+disableUsage := false
+provider, err := toggle.NewProvider(toggle.Config{
+    PublicKey:   "your-public-key",
+    Application: "your-app",
+    Environment: "development",
+    EnableUsage: &disableUsage, // Disable usage telemetry
+})
+```
+Note: Since EnableUsage is a pointer to bool, you need to first declare a boolean variable and then pass its address to the configuration.
+
 ## Configuration
 
 ### Provider Options
