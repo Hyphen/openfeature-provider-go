@@ -13,9 +13,10 @@ import (
 func main() {
 	// Configuration for the Hyphen provider
 	config := toggle.Config{
-		Application: "application_id",
-		Environment: "production",
-		PublicKey:   "your-key",
+		Application:       "app",
+		Environment:       "production",
+		PublicKey:         "public_b3JnXzY2OGI2MDM0NTc1YzExMjcwZDFiNzNlYjpwcm9qXzY2ZmVkM2RlMzA1NmZjYjM5ZjcxZTM1ZDpaZ3RoZlY3cUl1d0hyQ0xkWk1FUg==",
+		HorizonServerURLs: []string{"https://dev-horizon.hyphen.ai"},
 	}
 
 	// Initialize the provider
@@ -57,11 +58,24 @@ func main() {
 	ctx := context.Background()
 	ctx = context.WithValue(ctx, "logger", log.Default())
 
+	type GammaStruct struct {
+		Enabled     bool    `json:"enabled"`
+		Probability float64 `json:"probability"`
+		Parameters  struct {
+			Alpha float64 `json:"alpha"`
+			Beta  float64 `json:"beta"`
+		} `json:"parameters"`
+		Settings struct {
+			MaxIterations int     `json:"maxIterations"`
+			Tolerance     float64 `json:"tolerance"`
+			Seed          int64   `json:"seed"`
+		} `json:"settings"`
+	}
 	// Evaluate a feature flag
-	flagKey := "beta"
-	defaultValue := "default value"
+	flagKey := "gamma"
+	defaultGamma := GammaStruct{}
 
-	result, err := client.StringValue(ctx, flagKey, defaultValue, evalCtx)
+	result, err := client.ObjectValueDetails(ctx, flagKey, defaultGamma, evalCtx)
 	if err != nil {
 		log.Printf("Evaluation context: %+v", evalCtx)
 		log.Fatalf("Error evaluating flag: %v", err)

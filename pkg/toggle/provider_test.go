@@ -29,6 +29,8 @@ func (m *MockClient) SendTelemetry(payload TelemetryPayload) error {
 }
 
 func TestNewProvider(t *testing.T) {
+	wantEnableUsage := false
+
 	tests := []struct {
 		name       string
 		config     Config
@@ -49,7 +51,7 @@ func TestNewProvider(t *testing.T) {
 				Application:       "test-app",
 				Environment:       "test-env",
 				HorizonServerURLs: []string{"https://horizon.hyphen.ai"}, // Include default URL
-				EnableUsage:       false,
+				EnableUsage:       &wantEnableUsage,
 				Cache:             nil,
 			},
 		},

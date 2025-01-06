@@ -47,7 +47,7 @@ func (h *ProviderHook) Before(ctx context.Context, hookContext openfeature.HookC
 }
 
 func (h *ProviderHook) After(ctx context.Context, hookContext openfeature.HookContext, details openfeature.InterfaceEvaluationDetails, hookHints openfeature.HookHints) error {
-	if !h.provider.config.EnableUsage {
+	if h.provider.config.EnableUsage != nil && !*h.provider.config.EnableUsage {
 		return nil
 	}
 

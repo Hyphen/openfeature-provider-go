@@ -7,7 +7,7 @@ type Config struct {
 	Application       string
 	Environment       string
 	HorizonServerURLs []string
-	EnableUsage       bool
+	EnableUsage       *bool
 	Cache             *CacheConfig
 }
 
