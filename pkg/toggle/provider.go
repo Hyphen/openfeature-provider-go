@@ -27,17 +27,17 @@ func extractOrgID(publicKey string) (string, error) {
 
 	decoded, err := base64.StdEncoding.DecodeString(key)
 	if err != nil {
-		return "", nil
+		return "", fmt.Errorf("failed to decode public key: %w", err)
 	}
 
 	parts := strings.Split(string(decoded), ":")
 	if len(parts) < 2 {
-		return "", nil
+		return "", fmt.Errorf("invalid key format: insufficient parts")
 	}
 
 	orgID := parts[0]
 	if !orgIDRegex.MatchString(orgID) {
-		return "", nil
+		return "", fmt.Errorf("invalid orgID format")
 	}
 
 	return orgID, nil
