@@ -2,6 +2,7 @@ package toggle
 
 import (
 	"context"
+	"encoding/base64"
 	"testing"
 
 	"github.com/open-feature/go-sdk/openfeature"
@@ -29,35 +30,58 @@ func (m *MockClient) SendTelemetry(payload TelemetryPayload) error {
 }
 
 func TestNewProvider(t *testing.T) {
-
 	tests := []struct {
-		name       string
-		config     Config
-		wantErr    bool
-		errMessage string
-		wantConfig *Config
+		name          string
+		config        Config
+		wantErr       bool
+		errMessage    string
+		wantEndpoints []HorizonEndpoints
 	}{
 		{
-			name: "valid config",
+			name: "valid config with public key",
 			config: Config{
-				PublicKey:   "test-key",
+				PublicKey:   "public_" + base64.StdEncoding.EncodeToString([]byte("test-org:proj:random")),
 				Application: "test-app",
 				Environment: "test-env",
 			},
 			wantErr: false,
-			wantConfig: &Config{
-				PublicKey:   "test-key",
+			wantEndpoints: []HorizonEndpoints{{
+				Evaluate:  "https://test-org.toggle.hyphen.cloud/toggle/evaluate",
+				Telemetry: "https://test-org.toggle.hyphen.cloud/toggle/telemetry",
+			}},
+		},
+		{
+			name: "valid config with custom horizon urls",
+			config: Config{
+				PublicKey:   "public_" + base64.StdEncoding.EncodeToString([]byte("test-org:proj:random")),
 				Application: "test-app",
 				Environment: "test-env",
-				HorizonUrls: []string{"https://horizon.hyphen.ai"}, // Include default URL
-				Cache:       nil,
+				HorizonUrls: []string{"https://custom.url"},
 			},
+			wantErr: false,
+			wantEndpoints: []HorizonEndpoints{{
+				Evaluate:  "https://custom.url/toggle/evaluate",
+				Telemetry: "https://custom.url/toggle/telemetry",
+			}},
+		},
+		{
+			name: "invalid public key",
+			config: Config{
+				PublicKey:   "public_invalid_base64",
+				Application: "test-app",
+				Environment: "test-env",
+			},
+			wantErr: false,
+			wantEndpoints: []HorizonEndpoints{{
+				Evaluate:  "https://toggle.hyphen.cloud/toggle/evaluate",
+				Telemetry: "https://toggle.hyphen.cloud/toggle/telemetry",
+			}},
 		},
 		{
 			name:       "empty config",
 			config:     Config{},
 			wantErr:    true,
-			errMessage: "application is required", // Updated error message
+			errMessage: "application is required",
 		},
 	}
 
@@ -71,9 +95,14 @@ func TestNewProvider(t *testing.T) {
 			} else {
 				assert.NoError(t, err)
 				assert.NotNil(t, p)
-				assert.Equal(t, *tt.wantConfig, p.config) // Compare with expected config
+
+				// Check if endpoints match expected endpoints
+				assert.Equal(t, tt.wantEndpoints, p.endpoints)
+
+				// Other assertions
+				assert.Equal(t, tt.config.Application, p.config.Application)
+				assert.Equal(t, tt.config.Environment, p.config.Environment)
 				assert.NotNil(t, p.client)
-				assert.NotEmpty(t, p.endpoints)
 				assert.NotEmpty(t, p.hooks)
 			}
 		})
