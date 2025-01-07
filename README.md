@@ -21,46 +21,106 @@ This repository contains the Hyphen Provider implementation for the [OpenFeature
 go get github.com/hyphen/openfeature-provider-go
 ```
 
-## Usage
+## Quick Start
 
 ```go
 package main
 
 import (
     "context"
+    "log"
     "github.com/open-feature/go-sdk/openfeature"
     "github.com/hyphen/openfeature-provider-go/pkg/toggle"
 )
 
 func main() {
-    // Configure the provider
-    config := toggle.Config{
+    // Initialize the provider
+    provider, err := toggle.NewProvider(toggle.Config{
         PublicKey:   "your-public-key",
         Application: "your-app",
         Environment: "development",
-    }
-
-    // Create a new provider
-    provider, err := toggle.NewProvider(config)
+    })
     if err != nil {
-        panic(err)
+        log.Fatal(err)
     }
 
     // Set as global provider
     openfeature.SetProvider(provider)
 
-    // Get a client
+    // Create a client
     client := openfeature.NewClient("my-app")
 
-    // Evaluate flags
-    value, err := client.BooleanValue(
-        context.Background(),
-        "my-flag",
-        false,
-        openfeature.NewEvaluationContext("user-123", nil),
+    // Create evaluation context
+    ctx := openfeature.NewEvaluationContext(
+        "user-123",
+        map[string]interface{}{
+            "email": "user@example.com",
+            "plan":  "premium",
+        },
     )
+
+    // Evaluate different types of flags
+    boolFlag, _ := client.BooleanValue(context.Background(), "my-bool-flag", false, ctx)
+    stringFlag, _ := client.StringValue(context.Background(), "my-string-flag", "default", ctx)
+    numberFlag, _ := client.NumberValue(context.Background(), "my-number-flag", 0, ctx)
+
+    log.Printf("Bool Flag: %v", boolFlag)
+    log.Printf("String Flag: %s", stringFlag)
+    log.Printf("Number Flag: %f", numberFlag)
 }
 ```
+
+## Advanced Usage
+
+### Evaluation Context
+
+The evaluation context allows you to pass targeting information:
+
+```go
+ctx := openfeature.NewEvaluationContext(
+    "user-123",
+    map[string]interface{}{
+        "email":      "user@example.com",
+        "plan":       "premium",
+        "age":        25,
+        "country":    "US",
+        "beta_user":  true,
+    },
+)
+```
+
+### Caching Configuration
+
+Configure caching to improve performance:
+
+```go
+config := toggle.Config{
+    PublicKey:   "your-public-key",
+    Application: "your-app",
+    Environment: "development",
+    Cache: &toggle.CacheConfig{
+        TTL: time.Minute * 5,
+        KeyGen: func(ctx toggle.EvaluationContext) string {
+            return fmt.Sprintf("%s-%s", ctx.TargetingKey, ctx.GetValue("plan"))
+        },
+    },
+}
+```
+
+### Usage Telemetry
+
+By default, the provider sends telemetry data about feature flag evaluations to Hyphen (EnableUsage is `true`). To disable usage telemetry, you can set `EnableUsage` to `false` in the configuration:
+
+```go
+disableUsage := false
+provider, err := toggle.NewProvider(toggle.Config{
+    PublicKey:   "your-public-key",
+    Application: "your-app",
+    Environment: "development",
+    EnableUsage: &disableUsage, // Disable usage telemetry
+})
+```
+Note: Since EnableUsage is a pointer to bool, you need to first declare a boolean variable and then pass its address to the configuration.
 
 ## Configuration
 
