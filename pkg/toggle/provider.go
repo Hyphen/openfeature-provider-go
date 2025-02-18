@@ -325,26 +325,72 @@ func (p *Provider) ObjectEvaluation(ctx context.Context, flag string, defaultVal
 		},
 	}
 }
+
 func (p *Provider) buildContext(evalCtx openfeature.FlattenedContext) (EvaluationContext, error) {
 	targetingKey, ok := evalCtx["targetingKey"].(string)
 	if !ok {
 		return EvaluationContext{}, ErrMissingTargetKey
 	}
 
+	// Extract user data from the context
+	userData, ok := evalCtx["user"].(map[string]interface{})
+	if !ok {
+		userData = make(map[string]interface{})
+	}
+
+	// Create User struct with data from the nested structure
+	user := &User{
+		ID:    getString(userData, "id", targetingKey),
+		Email: getString(userData, "email", ""),
+		Name:  getString(userData, "name", ""),
+	}
+
+	// Handle user custom attributes
+	if customAttrs, ok := userData["customAttributes"].(map[string]interface{}); ok {
+		user.CustomAttributes = customAttrs
+	} else {
+		user.CustomAttributes = make(map[string]interface{})
+	}
+
+	// Build the evaluation context
 	ctx := EvaluationContext{
 		TargetingKey:     targetingKey,
 		Application:      p.config.Application,
 		Environment:      p.config.Environment,
+		User:             user,
 		CustomAttributes: make(map[string]interface{}),
 	}
 
+	// Add remaining top-level attributes to customAttributes
 	for k, v := range evalCtx {
-		if k != "targetingKey" {
+		switch k {
+		case "targetingKey", "user":
+			continue
+		default:
 			ctx.CustomAttributes[k] = v
 		}
 	}
 
 	return ctx, nil
+}
+
+// Helper function to safely get string values from map
+func getString(m map[string]interface{}, key string, defaultValue string) string {
+	if val, ok := m[key].(string); ok {
+		return val
+	}
+	return defaultValue
+}
+
+// Helper function to determine if an attribute belongs to user
+func isUserAttribute(key string) bool {
+	userAttributes := map[string]bool{
+		"role":    true,
+		"group":   true,
+		"company": true,
+		// Add other user-specific attributes as needed
+	}
+	return userAttributes[key]
 }
 
 func (p *Provider) Hooks() []openfeature.Hook {
