@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.1](https://github.com/Hyphen/openfeature-provider-go/compare/v1.0.0...v1.0.1) (2025-02-20)
+
+
+### Bug Fixes
+
+* user attribute handling in buildContext method ([#10](https://github.com/Hyphen/openfeature-provider-go/issues/10)) ([3d21d01](https://github.com/Hyphen/openfeature-provider-go/commit/3d21d01d162060cef4925c3e342ce62339b05c15))
+
 ## [1.0.0](https://github.com/Hyphen/openfeature-provider-go/compare/v0.0.1...v1.0.0) (2025-01-07)
 
 
