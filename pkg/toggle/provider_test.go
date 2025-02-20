@@ -261,7 +261,7 @@ func TestProvider_buildContext(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "valid context",
+			name: "valid context with targeting key",
 			evalCtx: openfeature.FlattenedContext{
 				"targetingKey": "user-123",
 				"custom":       "value",
@@ -270,6 +270,12 @@ func TestProvider_buildContext(t *testing.T) {
 				TargetingKey: "user-123",
 				Application:  "test-app",
 				Environment:  "test-env",
+				User: &User{
+					ID:               "user-123", // targeting key is used as user ID
+					Email:            "",
+					Name:             "",
+					CustomAttributes: make(map[string]interface{}),
+				},
 				CustomAttributes: map[string]interface{}{
 					"custom": "value",
 				},
@@ -277,8 +283,43 @@ func TestProvider_buildContext(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:    "missing targeting key",
-			evalCtx: openfeature.FlattenedContext{},
+			name: "valid context with user data",
+			evalCtx: openfeature.FlattenedContext{
+				"targetingKey": "user-123",
+				"user": map[string]interface{}{
+					"id":    "custom-id",
+					"email": "test@example.com",
+					"name":  "Test User",
+					"customAttributes": map[string]interface{}{
+						"role": "admin",
+					},
+				},
+				"custom": "value",
+			},
+			want: EvaluationContext{
+				TargetingKey: "user-123",
+				Application:  "test-app",
+				Environment:  "test-env",
+				User: &User{
+					ID:    "custom-id",
+					Email: "test@example.com",
+					Name:  "Test User",
+					CustomAttributes: map[string]interface{}{
+						"role": "admin",
+					},
+				},
+				CustomAttributes: map[string]interface{}{
+					"custom": "value",
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "missing targeting key",
+			evalCtx: openfeature.FlattenedContext{
+				"custom": "value",
+			},
+			want:    EvaluationContext{},
 			wantErr: true,
 		},
 	}
@@ -295,11 +336,26 @@ func TestProvider_buildContext(t *testing.T) {
 			got, err := p.buildContext(tt.evalCtx)
 			if tt.wantErr {
 				assert.Error(t, err)
+				assert.Equal(t, ErrMissingTargetKey, err)
 				return
 			}
 
 			assert.NoError(t, err)
-			assert.Equal(t, tt.want, got)
+			assert.Equal(t, tt.want.TargetingKey, got.TargetingKey)
+			assert.Equal(t, tt.want.Application, got.Application)
+			assert.Equal(t, tt.want.Environment, got.Environment)
+			assert.Equal(t, tt.want.CustomAttributes, got.CustomAttributes)
+
+			// Compare User fields individually
+			if tt.want.User != nil {
+				assert.NotNil(t, got.User)
+				assert.Equal(t, tt.want.User.ID, got.User.ID)
+				assert.Equal(t, tt.want.User.Email, got.User.Email)
+				assert.Equal(t, tt.want.User.Name, got.User.Name)
+				assert.Equal(t, tt.want.User.CustomAttributes, got.User.CustomAttributes)
+			} else {
+				assert.Nil(t, got.User)
+			}
 		})
 	}
 }

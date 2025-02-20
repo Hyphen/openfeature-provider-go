@@ -54,7 +54,6 @@ func (c *Client) Evaluate(ctx EvaluationContext) (*Response, error) {
 			return cached.(*Response), nil
 		}
 	}
-
 	var lastErr error
 	for _, endpoint := range c.endpoints {
 		resp, err := c.fetchEvaluation(endpoint.Evaluate, ctx)
@@ -62,15 +61,12 @@ func (c *Client) Evaluate(ctx EvaluationContext) (*Response, error) {
 			lastErr = err
 			continue
 		}
-
 		if c.cache != nil && c.keyGen != nil {
 			key := c.keyGen(ctx)
 			c.cache.Set(key, resp, cache.DefaultExpiration)
 		}
-
 		return resp, nil
 	}
-
 	return nil, fmt.Errorf("all evaluation attempts failed: %v", lastErr)
 }
 
@@ -101,6 +97,12 @@ func (c *Client) fetchEvaluation(evaluateURL string, ctx EvaluationContext) (*Re
 	var result Response
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 		return nil, err
+	}
+
+	for _, toggle := range result.Toggles {
+		if toggle.Reason == "no target matched" {
+			return nil, ErrFlagNotFound
+		}
 	}
 
 	return &result, nil
