@@ -18,7 +18,7 @@ func main() {
 		Environment: "production",
 		// Alternatively, you can use a project environment ID:
 		// Environment: "pevr_abc123",
-		PublicKey:   "PUBLIC_KEY_HERE",
+		PublicKey: "PUBLIC_KEY_HERE",
 	}
 
 	// Initialize the provider

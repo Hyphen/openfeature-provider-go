@@ -47,15 +47,15 @@ func newEndpoints(urls []string) []HorizonEndpoints {
 func validateEnvironmentFormat(environment string) error {
 	// Check if it's a project environment ID (starts with 'pevr_')
 	isEnvironmentId := strings.HasPrefix(environment, "pevr_")
-	
+
 	// Check if it's a valid alternateId
-	isValidAlternateId := alternateIdRegex.MatchString(environment) && 
+	isValidAlternateId := alternateIdRegex.MatchString(environment) &&
 		!strings.Contains(environment, "environments")
-	
+
 	if !isEnvironmentId && !isValidAlternateId {
 		return ErrInvalidEnvironmentFormat
 	}
-	
+
 	return nil
 }
 
@@ -66,12 +66,12 @@ func validateConfig(config Config) error {
 	if config.Environment == "" {
 		return ErrMissingEnvironment
 	}
-	
+
 	// Validate environment format
 	if err := validateEnvironmentFormat(config.Environment); err != nil {
 		return err
 	}
-	
+
 	if config.PublicKey == "" {
 		return ErrMissingPublicKey
 	}
