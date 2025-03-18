@@ -45,6 +45,62 @@ func TestNewEndpoints(t *testing.T) {
 	}
 }
 
+func TestValidateEnvironmentFormat(t *testing.T) {
+	tests := []struct {
+		name        string
+		environment string
+		wantErr     error
+	}{
+		{
+			name:        "valid project environment ID",
+			environment: "pevr_abc123",
+			wantErr:     nil,
+		},
+		{
+			name:        "valid alternateId - simple",
+			environment: "production",
+			wantErr:     nil,
+		},
+		{
+			name:        "valid alternateId - with hyphens and underscores",
+			environment: "prod-us_east",
+			wantErr:     nil,
+		},
+		{
+			name:        "valid alternateId - with numbers",
+			environment: "prod123",
+			wantErr:     nil,
+		},
+		{
+			name:        "invalid - contains 'environments'",
+			environment: "test-environments-prod",
+			wantErr:     ErrInvalidEnvironmentFormat,
+		},
+		{
+			name:        "invalid - uppercase letters",
+			environment: "Production",
+			wantErr:     ErrInvalidEnvironmentFormat,
+		},
+		{
+			name:        "invalid - too long (26 characters)",
+			environment: "abcdefghijklmnopqrstuvwxyz",
+			wantErr:     ErrInvalidEnvironmentFormat,
+		},
+		{
+			name:        "invalid - special characters",
+			environment: "prod@test",
+			wantErr:     ErrInvalidEnvironmentFormat,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := validateEnvironmentFormat(tt.environment)
+			assert.Equal(t, tt.wantErr, err)
+		})
+	}
+}
+
 func TestValidateConfig(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -52,10 +108,19 @@ func TestValidateConfig(t *testing.T) {
 		wantErr error
 	}{
 		{
-			name: "valid config",
+			name: "valid config with project environment ID",
 			config: Config{
 				Application: "test-app",
-				Environment: "test-env",
+				Environment: "pevr_abc123",
+				PublicKey:   "test-key",
+			},
+			wantErr: nil,
+		},
+		{
+			name: "valid config with alternateId",
+			config: Config{
+				Application: "test-app",
+				Environment: "production",
 				PublicKey:   "test-key",
 			},
 			wantErr: nil,
@@ -63,7 +128,7 @@ func TestValidateConfig(t *testing.T) {
 		{
 			name: "missing application",
 			config: Config{
-				Environment: "test-env",
+				Environment: "production",
 				PublicKey:   "test-key",
 			},
 			wantErr: ErrMissingApplication,
@@ -77,10 +142,19 @@ func TestValidateConfig(t *testing.T) {
 			wantErr: ErrMissingEnvironment,
 		},
 		{
+			name: "invalid environment format",
+			config: Config{
+				Application: "test-app",
+				Environment: "Production", // Invalid: uppercase
+				PublicKey:   "test-key",
+			},
+			wantErr: ErrInvalidEnvironmentFormat,
+		},
+		{
 			name: "missing public key",
 			config: Config{
 				Application: "test-app",
-				Environment: "test-env",
+				Environment: "production",
 			},
 			wantErr: ErrMissingPublicKey,
 		},

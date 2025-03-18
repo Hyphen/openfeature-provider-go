@@ -38,7 +38,7 @@ func main() {
     provider, err := toggle.NewProvider(toggle.Config{
         PublicKey:   "your-public-key",
         Application: "your-app",
-        Environment: "development",
+        Environment: "development", // Or "pevr_abc123" using project environment ID format
     })
     if err != nil {
         log.Fatal(err)
@@ -116,7 +116,10 @@ disableUsage := false
 provider, err := toggle.NewProvider(toggle.Config{
     PublicKey:   "your-public-key",
     Application: "your-app",
+    // Using alternateId format:
     Environment: "development",
+    // OR using project environment ID format:
+    // Environment: "pevr_abc123",
     EnableUsage: &disableUsage, // Disable usage telemetry
 })
 ```
@@ -130,7 +133,7 @@ Note: Since EnableUsage is a pointer to bool, you need to first declare a boolea
 |--------------------|----------|---------------------------------------------------------------------------------------|
 | `PublicKey`        | string   | Your Hyphen API public key                                                            |
 | `Application`      | string   | The application id or alternate id                                                    |
-| `Environment`      | string   | The environment in which your application is running (e.g., `production`, `staging`)  |
+| `Environment`      | string   | The environment identifier for the Hyphen project (project environment ID or alternateId). |
 | `EnableUsage`      | bool     | Enable or disable the logging of toggle usage (telemetry)                            |
 | `Cache`            | object   | Configuration for caching feature flag evaluations                                    |
 
@@ -142,7 +145,10 @@ The provider supports caching of evaluation results:
 config := toggle.Config{
     PublicKey:   "your-public-key",
     Application: "your-app",
+    // Using alternateId format:
     Environment: "development",
+    // OR using project environment ID format:
+    // Environment: "pevr_abc123",
     Cache: &toggle.CacheConfig{
         TTL: time.Minute * 5,
         KeyGen: func(ctx toggle.EvaluationContext) string {
