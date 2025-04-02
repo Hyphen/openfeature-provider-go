@@ -19,9 +19,11 @@ This repository contains the Hyphen Provider implementation for the [OpenFeature
 
 ```bash
 go get github.com/hyphen/openfeature-provider-go
+go get github.com/open-feature/go-sdk
 ```
 
-## Quick Start
+## Usage
+### Quick Start
 
 ```go
 package main
@@ -129,17 +131,24 @@ Note: Since EnableUsage is a pointer to bool, you need to first declare a boolea
 
 ### Provider Options
 
-| Option              | Type     | Description                                                                           |
-|--------------------|----------|---------------------------------------------------------------------------------------|
-| `PublicKey`        | string   | Your Hyphen API public key                                                            |
-| `Application`      | string   | The application id or alternate id                                                    |
-| `Environment`      | string   | The environment identifier for the Hyphen project (project environment ID or alternateId). |
-| `EnableUsage`      | bool     | Enable or disable the logging of toggle usage (telemetry)                            |
-| `Cache`            | object   | Configuration for caching feature flag evaluations                                    |
+| Option        | Type       | Required | Description                                                                                |
+| ------------- | ---------- | :------- | ------------------------------------------------------------------------------------------ |
+| `PublicKey`   | `string`   | Yes      | Your Hyphen API public key.                                                                |
+| `Application` | `string`   | Yes      | The application id or alternate id.                                                        |
+| `Environment` | `string`   | Yes      | The environment identifier for the Hyphen project (project environment ID or alternateId). |
+| `HorizonUrls` | `[]string` | No       | Hyphen Horizon URLs for fetching flags.                                                    |
+| `EnableUsage` | `bool`     | No       | Enable/disable telemetry (default: true).                                                  |
+| `Cache`       | `object`   | No       | Configuration for caching feature flag evaluations.                                        |
 
 ### Caching
-
 The provider supports caching of evaluation results:
+
+| Property | Type     | Default | Description                                                     |
+| :------- | :------- | :------ | :-------------------------------------------------------------- |
+| `TTL`    | number   | 300     | Time-to-live in seconds for cached flag evaluations.            |
+| `KeyGen` | Function | -       | Custom function to generate cache keys from evaluation context. |
+
+Example with cache configuration:
 
 ```go
 config := toggle.Config{
