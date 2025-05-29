@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/open-feature/go-sdk/openfeature"
@@ -102,14 +103,57 @@ func (p *Provider) BooleanEvaluation(ctx context.Context, flag string, defaultVa
 		}
 	}
 
-	if toggle, ok := eval.Toggles[flag]; ok && toggle.Type == "boolean" {
-		if value, ok := toggle.Value.(bool); ok {
-			return openfeature.BoolResolutionDetail{
-				Value: value,
-				ProviderResolutionDetail: openfeature.ProviderResolutionDetail{
-					Reason: openfeature.TargetingMatchReason,
-				},
+	if toggle, ok := eval.Toggles[flag]; ok {
+		if strings.EqualFold(toggle.Type, "boolean") {
+
+			switch v := toggle.Value.(type) {
+			case bool:
+				return openfeature.BoolResolutionDetail{
+					Value: v,
+					ProviderResolutionDetail: openfeature.ProviderResolutionDetail{
+						Reason: openfeature.TargetingMatchReason,
+					},
+				}
+			case string:
+				if strings.EqualFold(v, "true") {
+					return openfeature.BoolResolutionDetail{
+						Value: true,
+						ProviderResolutionDetail: openfeature.ProviderResolutionDetail{
+							Reason: openfeature.TargetingMatchReason,
+						},
+					}
+				} else if strings.EqualFold(v, "false") {
+					return openfeature.BoolResolutionDetail{
+						Value: false,
+						ProviderResolutionDetail: openfeature.ProviderResolutionDetail{
+							Reason: openfeature.TargetingMatchReason,
+						},
+					}
+				}
+				return openfeature.BoolResolutionDetail{
+					Value: defaultValue,
+					ProviderResolutionDetail: openfeature.ProviderResolutionDetail{
+						Reason:          openfeature.ErrorReason,
+						ResolutionError: openfeature.NewTypeMismatchResolutionError(fmt.Sprintf("invalid boolean string value: %s", v)),
+					},
+				}
+			default:
+				fmt.Printf("Unmatched type: %T\n", v)
+				return openfeature.BoolResolutionDetail{
+					Value: defaultValue,
+					ProviderResolutionDetail: openfeature.ProviderResolutionDetail{
+						Reason:          openfeature.ErrorReason,
+						ResolutionError: openfeature.NewTypeMismatchResolutionError(fmt.Sprintf("value type assertion failed, got type: %T", toggle.Value)),
+					},
+				}
 			}
+		}
+		return openfeature.BoolResolutionDetail{
+			Value: defaultValue,
+			ProviderResolutionDetail: openfeature.ProviderResolutionDetail{
+				Reason:          openfeature.ErrorReason,
+				ResolutionError: openfeature.NewTypeMismatchResolutionError(fmt.Sprintf("expected type 'boolean', got '%s'", toggle.Type)),
+			},
 		}
 	}
 
@@ -117,7 +161,7 @@ func (p *Provider) BooleanEvaluation(ctx context.Context, flag string, defaultVa
 		Value: defaultValue,
 		ProviderResolutionDetail: openfeature.ProviderResolutionDetail{
 			Reason:          openfeature.ErrorReason,
-			ResolutionError: openfeature.NewTypeMismatchResolutionError("invalid flag type"),
+			ResolutionError: openfeature.NewTypeMismatchResolutionError(fmt.Sprintf("flag '%s' not found in toggles", flag)),
 		},
 	}
 }
@@ -169,6 +213,7 @@ func (p *Provider) StringEvaluation(
 		},
 	}
 }
+
 func (p *Provider) FloatEvaluation(ctx context.Context, flag string, defaultValue float64, evalCtx openfeature.FlattenedContext) openfeature.FloatResolutionDetail {
 	hyphenCtx, err := p.buildContext(evalCtx)
 	if err != nil {
@@ -215,13 +260,22 @@ func (p *Provider) FloatEvaluation(ctx context.Context, flag string, defaultValu
 					Reason: openfeature.TargetingMatchReason,
 				},
 			}
+		case string:
+			if f, err := strconv.ParseFloat(v, 64); err == nil {
+				return openfeature.FloatResolutionDetail{
+					Value: f,
+					ProviderResolutionDetail: openfeature.ProviderResolutionDetail{
+						Reason: openfeature.TargetingMatchReason,
+					},
+				}
+			}
 		}
 	}
 
 	return openfeature.FloatResolutionDetail{
 		Value: defaultValue,
 		ProviderResolutionDetail: openfeature.ProviderResolutionDetail{
-			ResolutionError: openfeature.NewTypeMismatchResolutionError(ErrInvalidFlagType.Error()),
+			ResolutionError: openfeature.NewTypeMismatchResolutionError("invalid flag type"),
 			Reason:          openfeature.ErrorReason,
 		},
 	}
@@ -273,13 +327,22 @@ func (p *Provider) IntEvaluation(ctx context.Context, flag string, defaultValue 
 					Reason: openfeature.TargetingMatchReason,
 				},
 			}
+		case string:
+			if i, err := strconv.ParseInt(v, 10, 64); err == nil {
+				return openfeature.IntResolutionDetail{
+					Value: i,
+					ProviderResolutionDetail: openfeature.ProviderResolutionDetail{
+						Reason: openfeature.TargetingMatchReason,
+					},
+				}
+			}
 		}
 	}
 
 	return openfeature.IntResolutionDetail{
 		Value: defaultValue,
 		ProviderResolutionDetail: openfeature.ProviderResolutionDetail{
-			ResolutionError: openfeature.NewTypeMismatchResolutionError(ErrInvalidFlagType.Error()),
+			ResolutionError: openfeature.NewTypeMismatchResolutionError("invalid flag type"),
 			Reason:          openfeature.ErrorReason,
 		},
 	}
