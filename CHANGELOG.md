@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.2](https://github.com/Hyphen/openfeature-provider-go/compare/v1.0.1...v1.0.2) (2025-05-29)
+
+
+### Bug Fixes
+
+* horizon urls ([#15](https://github.com/Hyphen/openfeature-provider-go/issues/15)) ([cb5eb1e](https://github.com/Hyphen/openfeature-provider-go/commit/cb5eb1e6a6aee61fc8b71fd2bf6c2e3702513ba5))
+
 ## [1.0.1](https://github.com/Hyphen/openfeature-provider-go/compare/v1.0.0...v1.0.1) (2025-04-02)
 
 
