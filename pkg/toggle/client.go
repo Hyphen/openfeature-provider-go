@@ -24,11 +24,7 @@ type Client struct {
 	endpoints  []HorizonEndpoints
 }
 
-func newClient(config Config) (*Client, error) {
-	urls := config.HorizonUrls
-	if len(urls) == 0 {
-		urls = []string{horizon.URL}
-	}
+func newClient(config Config, endpoints []HorizonEndpoints) (*Client, error) {
 
 	c := &Client{
 		httpClient: &http.Client{
@@ -36,7 +32,7 @@ func newClient(config Config) (*Client, error) {
 		},
 		config:    config,
 		publicKey: config.PublicKey,
-		endpoints: newEndpoints(urls),
+		endpoints: endpoints,
 	}
 
 	if config.Cache != nil {
