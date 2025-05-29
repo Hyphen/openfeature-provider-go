@@ -2,6 +2,7 @@ package toggle
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -12,15 +13,22 @@ import (
 
 func TestNewClient(t *testing.T) {
 	tests := []struct {
-		name    string
-		config  Config
-		wantErr bool
+		name      string
+		config    Config
+		endpoints []HorizonEndpoints
+		wantErr   bool
 	}{
 		{
 			name: "valid config",
 			config: Config{
 				PublicKey:   "test-key",
 				HorizonUrls: []string{"http://test.com"},
+			},
+			endpoints: []HorizonEndpoints{
+				{
+					Evaluate:  "http://test.com/toggle/evaluate",
+					Telemetry: "http://test.com/toggle/telemetry",
+				},
 			},
 			wantErr: false,
 		},
@@ -35,13 +43,19 @@ func TestNewClient(t *testing.T) {
 					},
 				},
 			},
+			endpoints: []HorizonEndpoints{
+				{
+					Evaluate:  "http://test.com/toggle/evaluate",
+					Telemetry: "http://test.com/toggle/telemetry",
+				},
+			},
 			wantErr: false,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			client, err := newClient(tt.config)
+			client, err := newClient(tt.config, tt.endpoints)
 			if tt.wantErr {
 				assert.Error(t, err)
 				return
@@ -80,7 +94,14 @@ func TestClientEvaluate(t *testing.T) {
 		HorizonUrls: []string{server.URL},
 	}
 
-	client, err := newClient(config)
+	endpoints := []HorizonEndpoints{
+		{
+			Evaluate:  fmt.Sprintf("%s/toggle/evaluate", server.URL),
+			Telemetry: fmt.Sprintf("%s/toggle/telemetry", server.URL),
+		},
+	}
+
+	client, err := newClient(config, endpoints)
 	assert.NoError(t, err)
 
 	ctx := EvaluationContext{
@@ -122,8 +143,14 @@ func TestClientEvaluateWithCache(t *testing.T) {
 			},
 		},
 	}
+	endpoints := []HorizonEndpoints{
+		{
+			Evaluate:  fmt.Sprintf("%s/toggle/evaluate", server.URL),
+			Telemetry: fmt.Sprintf("%s/toggle/telemetry", server.URL),
+		},
+	}
 
-	client, err := newClient(config)
+	client, err := newClient(config, endpoints)
 	assert.NoError(t, err)
 
 	ctx := EvaluationContext{
@@ -157,8 +184,14 @@ func TestClientSendTelemetry(t *testing.T) {
 		PublicKey:   "test-key",
 		HorizonUrls: []string{server.URL},
 	}
+	endpoints := []HorizonEndpoints{
+		{
+			Evaluate:  fmt.Sprintf("%s/toggle/evaluate", server.URL),
+			Telemetry: fmt.Sprintf("%s/toggle/telemetry", server.URL),
+		},
+	}
 
-	client, err := newClient(config)
+	client, err := newClient(config, endpoints)
 	assert.NoError(t, err)
 
 	payload := TelemetryPayload{

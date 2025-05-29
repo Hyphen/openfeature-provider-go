@@ -62,7 +62,7 @@ func NewProvider(config Config) (*Provider, error) {
 		endpoints: newEndpoints(horizonUrls),
 	}
 
-	client, err := newClient(config)
+	client, err := newClient(config, p.endpoints)
 	if err != nil {
 		return nil, err
 	}

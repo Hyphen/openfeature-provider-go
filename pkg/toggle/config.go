@@ -21,7 +21,7 @@ type HorizonEndpoints struct {
 
 var (
 	horizon = HorizonConfig{
-		URL: "https://horizon.hyphen.ai",
+		URL: "https://toggle.hyphen.cloud",
 	}
 	// Regex for validating alternateId format
 	alternateIdRegex = regexp.MustCompile(`^[a-z0-9\-_]{1,25}$`)
