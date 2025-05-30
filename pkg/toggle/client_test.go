@@ -214,3 +214,71 @@ func TestClientSendTelemetry(t *testing.T) {
 	err = client.SendTelemetry(payload)
 	assert.NoError(t, err)
 }
+
+func TestEvaluate(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, "application/json", r.Header.Get("Content-Type"))
+		assert.Equal(t, "test-key", r.Header.Get("x-api-key"))
+		w.WriteHeader(http.StatusOK)
+		response := Response{
+			Toggles: map[string]Evaluation{
+				"test-flag": {
+					Key:   "test-flag",
+					Value: true,
+					Type:  "boolean",
+				},
+				"another-flag": {
+					Key:    "another-flag",
+					Value:  true,
+					Type:   "boolean",
+					Reason: "no target matched",
+				},
+			},
+		}
+		json.NewEncoder(w).Encode(response)
+	}))
+	defer server.Close()
+
+	tests := []struct {
+		name      string
+		config    Config
+		endpoints []HorizonEndpoints
+		ctx       EvaluationContext
+		wantErr   bool
+	}{
+		{
+			name: "successful evaluation",
+			config: Config{
+				PublicKey:   "test-key",
+				HorizonUrls: []string{server.URL},
+			},
+			endpoints: []HorizonEndpoints{
+				{
+					Evaluate:  fmt.Sprintf("%s/toggle/evaluate", server.URL),
+					Telemetry: fmt.Sprintf("%s/toggle/telemetry", server.URL),
+				},
+			},
+			ctx: EvaluationContext{
+				TargetingKey: "test-user",
+				Application:  "test-app",
+				Environment:  "test-env",
+			},
+			wantErr: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			client, err := newClient(tt.config, tt.endpoints)
+			assert.NoError(t, err)
+
+			resp, err := client.Evaluate(tt.ctx)
+			if tt.wantErr {
+				assert.Error(t, err)
+				return
+			}
+			assert.NoError(t, err)
+			assert.NotNil(t, resp)
+		})
+	}
+}
