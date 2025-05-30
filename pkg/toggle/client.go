@@ -95,12 +95,6 @@ func (c *Client) fetchEvaluation(evaluateURL string, ctx EvaluationContext) (*Re
 		return nil, err
 	}
 
-	for _, toggle := range result.Toggles {
-		if toggle.Reason == "no target matched" {
-			return nil, ErrFlagNotFound
-		}
-	}
-
 	return &result, nil
 }
 

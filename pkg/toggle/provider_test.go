@@ -142,6 +142,29 @@ func TestProvider_BooleanEvaluation(t *testing.T) {
 			},
 		},
 		{
+			name:         "successful boolean evaluation with no target match",
+			flag:         "test-flag",
+			defaultValue: false,
+			evalCtx: openfeature.FlattenedContext{
+				"targetingKey": "user-123",
+			},
+			mockResponse: &Response{
+				Toggles: map[string]Evaluation{
+					"test-flag": {
+						Type:   "boolean",
+						Value:  true,
+						Reason: "no target matched",
+					},
+				},
+			},
+			expected: openfeature.BoolResolutionDetail{
+				Value: true,
+				ProviderResolutionDetail: openfeature.ProviderResolutionDetail{
+					Reason: openfeature.TargetingMatchReason,
+				},
+			},
+		},
+		{
 			name:         "missing targeting key",
 			flag:         "test-flag",
 			defaultValue: false,
@@ -203,6 +226,29 @@ func TestProvider_StringEvaluation(t *testing.T) {
 					"test-flag": {
 						Type:  "string",
 						Value: "test-value",
+					},
+				},
+			},
+			expected: openfeature.StringResolutionDetail{
+				Value: "test-value",
+				ProviderResolutionDetail: openfeature.ProviderResolutionDetail{
+					Reason: openfeature.TargetingMatchReason,
+				},
+			},
+		},
+		{
+			name:         "successful string evaluation with no target match",
+			flag:         "test-flag",
+			defaultValue: "default",
+			evalCtx: openfeature.FlattenedContext{
+				"targetingKey": "user-123",
+			},
+			mockResponse: &Response{
+				Toggles: map[string]Evaluation{
+					"test-flag": {
+						Type:   "string",
+						Value:  "test-value",
+						Reason: "no target matched",
 					},
 				},
 			},
