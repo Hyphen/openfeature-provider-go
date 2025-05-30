@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.3](https://github.com/Hyphen/openfeature-provider-go/compare/v1.0.2...v1.0.3) (2025-05-30)
+
+
+### Bug Fixes
+
+* no target match throws an error [#17](https://github.com/Hyphen/openfeature-provider-go/issues/17) ([#18](https://github.com/Hyphen/openfeature-provider-go/issues/18)) ([0050746](https://github.com/Hyphen/openfeature-provider-go/commit/00507469932d7e8b2891f3882149b407e32efb69))
+
 ## [1.0.2](https://github.com/Hyphen/openfeature-provider-go/compare/v1.0.1...v1.0.2) (2025-05-29)
 
 
