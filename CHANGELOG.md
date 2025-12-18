@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.4](https://github.com/Hyphen/openfeature-provider-go/compare/v1.0.3...v1.0.4) (2025-12-18)
+
+
+### Bug Fixes
+
+* send correct type to telemetry ([#20](https://github.com/Hyphen/openfeature-provider-go/issues/20)) ([a367a8b](https://github.com/Hyphen/openfeature-provider-go/commit/a367a8beb059391dddca91724716e785c6d16fa5))
+
 ## [1.0.3](https://github.com/Hyphen/openfeature-provider-go/compare/v1.0.2...v1.0.3) (2025-05-30)
 
 
