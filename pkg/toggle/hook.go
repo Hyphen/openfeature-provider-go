@@ -2,7 +2,6 @@ package toggle
 
 import (
 	"context"
-	"strconv"
 
 	"github.com/open-feature/go-sdk/openfeature"
 	"golang.org/x/exp/rand"
@@ -99,13 +98,21 @@ func (h *ProviderHook) After(ctx context.Context, hookContext openfeature.HookCo
 			Toggle: Evaluation{
 				Key:    details.FlagKey,
 				Value:  details.Value,
-				Type:   strconv.FormatInt(int64(details.FlagType), 10),
+				Type:   typeToString[details.FlagType],
 				Reason: string(details.ResolutionDetail.Reason),
 			},
 		},
 	}
 
 	return h.provider.client.SendTelemetry(payload)
+}
+
+var typeToString = map[openfeature.Type]string{
+	openfeature.Boolean: "boolean",
+	openfeature.String:  "string",
+	openfeature.Float:   "number",
+	openfeature.Int:     "number",
+	openfeature.Object:  "object",
 }
 
 func (h *ProviderHook) Error(ctx context.Context, hookContext openfeature.HookContext, err error, hookHints openfeature.HookHints) {
